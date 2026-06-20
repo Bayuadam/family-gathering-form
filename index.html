@@ -182,12 +182,12 @@
                 <div class="radio-group"><input type="radio" name="ukuran_baju" value="4XL" id="size4XL"><label for="size4XL">4XL = Panjang 81 cm, Lebar 62 cm, LD 124 cm</label></div>
             </div>
             <div class="question-card">
-                <label class="question-title">Status Karyawan <span>*</span></label>
+                <label class="question-title">Status  <span>*</span></label>
                 <div class="radio-group"><input type="radio" name="status" value="Lajang" id="statusLajang" onclick="aturLogikaKeluarga(false)" required><label for="statusLajang">Lajang</label></div>
                 <div class="radio-group"><input type="radio" name="status" value="Menikah" id="statusMenikah" onclick="aturLogikaKeluarga(true)"><label for="statusMenikah">Menikah</label></div>
             </div>
             <div id="boxKeluarga" class="question-card hidden">
-                <label class="question-title">Jumlah Tiket Masuk Yang Dibutuhkan (Karyawan + Keluarga) <span>*</span></label>
+                <label class="question-title">Jumlah Tiket Masuk Yang Dibutuhkan ( + Keluarga) <span>*</span></label>
                 <div class="radio-group"><input type="radio" name="keluarga" value="2" id="k2"><label for="k2">2 Orang</label></div>
                 <div class="radio-group"><input type="radio" name="keluarga" value="3" id="k3"><label for="k3">3 Orang</label></div>
                 <div class="radio-group"><input type="radio" name="keluarga" value="4" id="k4"><label for="k4">4 Orang</label></div>
@@ -324,7 +324,7 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
             for (let i = 2; i <= totalOrang; i++) {
                 const kode = nik + "-" + i;
                 const qrFam = await generateQrBase64Async(kode);
-                tambahkanLembarTiketHtml(wrapperUtama, kode, `TIKET TAMBAHAN (PENDAMPING ${i-1})`, "PENDAMPING DARI " + nama, dept, "-", i + " of " + totalOrang, qrFam);
+                tambahkanLembarTiketHtml(wrapperUtama, kode, `TIKET TAMBAHAN (KELUARGA ${i-1})`, "KELUARGA DARI " + nama, dept, "-", i + " of " + totalOrang, qrFam);
                 await new Promise(r => setTimeout(r, 700));
             }
         }
@@ -410,7 +410,7 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
                     </div>
                     <div style="width:50%;">
                         <div style="font-size:11px; color:#80868b;">KATEGORI UNDANGAN</div>
-                        <div style="font-weight:bold; font-size:15px;">KARYAWAN TETAP</div>
+                        <div style="font-weight:bold; font-size:15px;">KARYAWAN</div>
                     </div>
                 </div>
 
