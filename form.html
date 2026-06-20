@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAMILY GATHERING</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        /* RESET & DESAIN KHAS GOOGLE FORM */
+        body { font-family: 'Roboto', Arial, sans-serif; background-color: #f0ebf8; margin: 0; padding: 20px 10px; color: #202124; }
+        .container { max-width: 650px; margin: auto; }
+        
+        .header-card { 
+            background-color: white; 
+            border-radius: 8px; 
+            border-top: 10px solid #673ab7; /* Warna Ungu Google Form */
+            padding: 24px; 
+            margin-bottom: 12px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12); 
+        }
+        .header-card h1 { margin: 0 0 12px 0; font-size: 32px; font-weight: 400; color: #202124; }
+        .header-card p { margin: 5px 0; font-size: 14px; color: #202124; line-height: 1.5; }
+        .note { font-weight: bold; color: #d93025; margin-top: 15px !important; }
+        
+        /* GForm Identity Strip */
+        .gform-identity-strip { border-top: 1px solid #dadce0; padding-top: 12px; margin-top: 12px; font-size: 14px; color: #5f6368; display: flex; align-items: center; justify-content: space-between; }
+        .gform-required-text { color: #d93025; font-size: 14px; }
+
+        .question-card { background-color: white; border-radius: 8px; padding: 24px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #dadce0; }
+        .question-title { font-size: 16px; font-weight: 500; margin-bottom: 16px; display: block; color: #202124; }
+        .question-title span { color: #d93025; margin-left: 4px; }
+        
+        /* Input Text GForm Style */
+        input[type="text"], input[type="email"] { 
+            width: 100%; 
+            max-width: 360px; 
+            padding: 8px 0; 
+            border: none; 
+            border-bottom: 1px dashed #70757a; 
+            font-size: 14px; 
+            outline: none; 
+            box-sizing: border-box; 
+            background: transparent;
+            transition: border-bottom 0.2s ease;
+        }
+        input[type="text"]:focus, input[type="email"]:focus { border-bottom: 2px solid #673ab7; }
+        
+        /* Custom Radio Button GForm Style */
+        .radio-group { margin-bottom: 14px; display: flex; align-items: center; }
+        .radio-group:last-child { margin-bottom: 0; }
+        .radio-group input[type="radio"] { 
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #5f6368;
+            border-radius: 50%;
+            outline: none;
+            margin-right: 12px;
+            cursor: pointer;
+            display: inline-block;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .radio-group input[type="radio"]:checked {
+            border-color: #673ab7;
+            background: radial-gradient(circle, #673ab7 45%, transparent 50%);
+        }
+        .radio-group label { font-size: 14px; color: #202124; cursor: pointer; user-select: none; }
+        
+        /* Tombol GForm Style */
+        .btn-submit { 
+            background-color: #673ab7; 
+            color: white; 
+            border: none; 
+            padding: 10px 24px; 
+            font-size: 14px; 
+            font-weight: 500; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+            transition: background-color 0.2s; 
+        }
+        .btn-submit:hover { background-color: #512da8; }
+        .btn-submit:disabled { background-color: #aaa; cursor: not-allowed; }
+        .hidden { display: none !important; }
+
+        /* TAMPILAN HELPER SUKSES */
+        .success-card { background: white; border-radius: 8px; padding: 30px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn-pdf { background-color: #28a745; color: white; border: none; padding: 15px 30px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 20px; text-transform: uppercase;}
+        .gform-footer-mock { font-size: 12px; color: #70757a; text-align: center; margin-top: 24px; line-height: 16px; }
+
+        /* ====================================================
+           STRUKTUR MASTER LAYOUT KERTAS: TIKET DAN HALAMAN
+           ====================================================
+        */
+        #printable-ticket-wrapper { width: 680px; margin: 0 auto; background: #f1f3f4; }
+        .ticket-page { background: white; width: 100%; min-height: 920px; padding: 40px; box-sizing: border-box; position: relative; page-break-after: always; }
+        .ticket-page:last-child { page-break-after: avoid; }
+        
+        /* KOMPONEN VISUAL TIKET */
+        .t-header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 25px; border-radius: 12px 12px 0 0; text-align: center; }
+        .t-header h1 { margin: 0; font-size: 24px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; }
+        .t-header p { margin: 5px 0 0 0; font-size: 13px; opacity: 0.9; }
+        .t-sub-bar { background: #ffc107; color: #111; font-size: 12px; font-weight: bold; text-align: center; padding: 6px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .t-body { padding: 25px 10px; }
+        .t-section-title { font-size: 12px; color: #70757a; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; border-bottom: 1px solid #dee2e6; padding-bottom: 5px; }
+        .t-grid { display: flex; flex-wrap: wrap; margin-bottom: 25px; }
+        .t-field { width: 50%; margin-bottom: 15px; box-sizing: border-box; padding-right: 15px; }
+        .t-label { font-size: 11px; color: #80868b; text-transform: uppercase; margin-bottom: 3px; }
+        .t-val { font-size: 14px; font-weight: bold; color: #202124; }
+
+        /* AREA PENEMPATAN QR CODE */
+        .t-qr-zone { text-align: center; padding: 30px 20px; border: 2px dashed #dadce0; border-radius: 12px; background: #fafafa; margin: 20px 0; }
+        .t-qr-container { display: inline-block; padding: 15px; background: white; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-radius: 8px; }
+        
+        .t-qr-container img { display: block; width: 160px; height: 160px; margin: 0 auto; border: none; }
+        .t-ticket-id { font-size: 18px; font-weight: 800; color: #1e3c72; margin-top: 15px; letter-spacing: 1px; font-family: monospace; }
+        .t-holder-type { display: inline-block; background: #e8f0fe; color: #1a73e8; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-top: 5px; text-transform: uppercase; }
+
+        .t-footer { border-top: 1px solid #dadce0; padding-top: 20px; margin-top: 40px; }
+        .t-notice-title { font-size: 12px; font-weight: bold; color: #202124; text-transform: uppercase; margin-bottom: 8px; }
+        .t-notice-list { font-size: 11px; color: #5f6368; margin: 0; padding-left: 18px; line-height: 1.6; }
+        .t-sys-info { text-align: center; font-size: 10px; color: #bdc1c6; margin-top: 30px; text-transform: uppercase; letter-spacing: 1px; }
+
+        #qr-backstage-workshop { position: fixed; bottom: 10px; right: 10px; width: 180px; height: 180px; opacity: 0.01; pointer-events: none; z-index: -9999; background: white; }
+    </style>    
+</head>
+<body>
+
+<div class="container" id="main-container">
+    <div id="form-view">
+        <div class="header-card">
+            <h1>FAMILY GATHERING</h1>
+            <p>Form Registrasi Data Kehadiran Family Gathering PT. Saga Hikari Teknindo Sejati 2026</p>
+            <p class="note">Note : Pengisian Form Hanya Bisa Dilakukan 1 Kali Saja</p>
+            
+            <div class="gform-identity-strip">
+                <div class="gform-required-text">* Menunjukkan pertanyaan yang wajib diisi</div>
+            </div>
+        </div>
+
+        <form action="https://script.google.com/macros/s/AKfycbzV4yE3Z7jwRtA9MxUbL2N4sQUHDFYoO8uVnhiaQ4SNR9nVexIGIhLBKHUTKLxFji_n/exec" method="POST" id="registrationForm" target="hidden_iframe">
+            <div class="question-card">
+                <label class="question-title">Email Address <span>*</span></label>
+                <input type="email" name="email" id="in_email" placeholder="Email Anda" required>
+            </div>
+            <div class="question-card">
+                <label class="question-title">Nama Lengkap Karyawan <span>*</span></label>
+                <input type="text" name="nama" id="in_nama" placeholder="Jawaban singkat Anda" required>
+            </div>
+            <div class="question-card">
+                <label class="question-title">NIK Karyawan <span>*</span></label>
+                <input type="text" name="nik" id="in_nik" placeholder="Jawaban singkat Anda" required>
+            </div>
+            <div class="question-card">
+                <label class="question-title">Departemen <span>*</span></label>
+                <div class="radio-group"><input type="radio" name="departemen" value="ACCOUNTING" id="dept1" required><label for="dept1">ACCOUNTING</label></div>
+                <div class="radio-group"><input type="radio" name="departemen" value="PURCHASING" id="dept2"><label for="dept2">PURCHASING</label></div>
+                <div class="radio-group"><input type="radio" name="departemen" value="HRD-GA" id="dept3"><label for="dept3">HRD-GA</label></div>
+                <div class="radio-group"><input type="radio" name="departemen" value="QHSE" id="dept4"><label for="dept4">QHSE</label></div>
+                <div class="radio-group"><input type="radio" name="departemen" value="MARKETING" id="dept5"><label for="dept5">MARKETING</label></div>
+                <div class="radio-group"><input type="radio" name="departemen" value="IT" id="dept6"><label for="dept6">IT</label></div>
+                <div class="radio-group"><input type="radio" name="departemen" value="CE-HOUSING" id="dept7"><label for="dept7">CE-HOUSING</label></div>
+                <div class="radio-group"><input type="radio" name="departemen" value="PRODUKSI 1" id="dept8"><label for="dept8">PRODUKSI 1</label></div>
+                <div class="radio-group"><input type="radio" name="departemen" value="PRODUKSI 2" id="dept9"><label for="dept9">PRODUKSI 2</label></div>
+                <div class="radio-group"><input type="radio" name="departemen" value="QAQC" id="dept10"><label for="dept10">QAQC</label></div>
+                <div class="radio-group"><input type="radio" name="departemen" value="PPIC" id="dept11"><label for="dept11">PPIC</label></div>
+                <div class="radio-group"><input type="radio" name="departemen" value="WAREHOUSE" id="dept12"><label for="dept12">WAREHOUSE</label></div>
+                <div class="radio-group"><input type="radio" name="departemen" value="ENGINEERING" id="dept13"><label for="dept13">ENGINEERING</label></div>
+            </div> 
+            <div class="question-card">
+                <label class="question-title">Ukuran Baju Family Gathering <span>*</span></label>
+                <div class="radio-group"><input type="radio" name="ukuran_baju" value="S" id="sizeS" required><label for="sizeS">S = Panjang 66 cm, Lebar 47 cm, LD 94 cm</label></div>
+                <div class="radio-group"><input type="radio" name="ukuran_baju" value="M" id="sizeM"><label for="sizeM">M = Panjang 70 cm, Lebar 49 cm, LD 98 cm</label></div>
+                <div class="radio-group"><input type="radio" name="ukuran_baju" value="L" id="sizeL"><label for="sizeL">L = Panjang 72 cm, Lebar 52 cm, LD 104 cm</label></div>
+                <div class="radio-group"><input type="radio" name="ukuran_baju" value="XL" id="sizeXL"><label for="sizeXL">XL = Panjang 75 cm, Lebar 55 cm, LD 110 cm</label></div>
+                <div class="radio-group"><input type="radio" name="ukuran_baju" value="2XL" id="size2XL"><label for="size2XL">2XL  = Panjang 77 cm, Lebar 58 cm, LD 116 cm</label></div>
+                <div class="radio-group"><input type="radio" name="ukuran_baju" value="3XL" id="size3XL"><label for="size3XL">3XL = Panjang 79 cm, Lebar 60 cm, LD 120 cm</label></div>
+                <div class="radio-group"><input type="radio" name="ukuran_baju" value="4XL" id="size4XL"><label for="size4XL">4XL = Panjang 81 cm, Lebar 62 cm, LD 124 cm</label></div>
+            </div>
+            <div class="question-card">
+                <label class="question-title">Status Karyawan <span>*</span></label>
+                <div class="radio-group"><input type="radio" name="status" value="Lajang" id="statusLajang" onclick="aturLogikaKeluarga(false)" required><label for="statusLajang">Lajang</label></div>
+                <div class="radio-group"><input type="radio" name="status" value="Menikah" id="statusMenikah" onclick="aturLogikaKeluarga(true)"><label for="statusMenikah">Menikah</label></div>
+            </div>
+            <div id="boxKeluarga" class="question-card hidden">
+                <label class="question-title">Jumlah Tiket Masuk Yang Dibutuhkan (Karyawan + Keluarga) <span>*</span></label>
+                <div class="radio-group"><input type="radio" name="keluarga" value="2" id="k2"><label for="k2">2 Orang</label></div>
+                <div class="radio-group"><input type="radio" name="keluarga" value="3" id="k3"><label for="k3">3 Orang</label></div>
+                <div class="radio-group"><input type="radio" name="keluarga" value="4" id="k4"><label for="k4">4 Orang</label></div>
+            </div>
+            <div style="margin-bottom: 24px;"><button type="submit" id="btn-kirim" class="btn-submit">Kirim</button></div>
+        </form>
+
+        <div class="gform-footer-mock">
+            Konten ini tidak dibuat atau didukung oleh Google. <a href="#" style="color:#70757a; text-decoration: none;">Laporkan Penyalahgunaan</a> - <a href="#" style="color:#70757a; text-decoration: none;">Persyaratan Layanan</a> - <a href="#" style="color:#70757a; text-decoration: none;">Kebijakan Privasi</a>
+            <h2 style="font-size: 22px; color: #5f6368; font-weight: 500; margin-top: 15px; font-family: Arial, sans-serif;">Google Formulir</h2>
+        </div>
+    </div>
+
+    <div id="success-view" class="hidden">
+        <div class="success-card">
+            <h2 style="color: #28a745;">✔ Registrasi Berhasil Disimpan!</h2>
+            <p>Data pendaftaran Anda telah terekam aman di database perusahaan.</p>
+            <p>Tiket PDF Anda sedang diproses unduh otomatis. Jika tidak berjalan, klik tombol manual di bawah ini:</p>
+            <button class="btn-pdf" onclick="unduhPdfSaja()">DOWNLOAD TIKET PDF</button>
+        </div>
+    </div>
+</div>
+
+<div style="position: absolute; left: -9999px; top: -9999px;">
+    <div id="printable-ticket-wrapper"></div>
+</div>
+
+<div id="qr-backstage-workshop"></div>
+
+<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
+<script>
+    var globalFilename = "Tiket_Gathering.pdf";
+
+    function aturLogikaKeluarga(harusMuncul) {
+        var boxKeluarga = document.getElementById("boxKeluarga");
+        var opsiRadioKeluarga = document.getElementsByName("keluarga");
+        if (harusMuncul) {
+            boxKeluarga.classList.remove("hidden");
+            opsiRadioKeluarga[0].setAttribute("required", "required");
+        } else {
+            boxKeluarga.classList.add("hidden");
+            opsiRadioKeluarga[0].removeAttribute("required");
+            for (var i = 0; i < opsiRadioKeluarga.length; i++) { opsiRadioKeluarga[i].checked = false; }
+        }
+    }
+
+    async function generateQrBase64Async(teksKode) {
+        return new Promise((resolve) => {
+            const workshop = document.getElementById('qr-backstage-workshop');
+            workshop.innerHTML = '';
+
+            new QRCode(workshop, {
+                text: teksKode,
+                width: 220,
+                height: 220,
+                colorDark: "#1e3c72",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            let attempts = 0;
+            const maxAttempts = 50;
+
+            const interval = setInterval(() => {
+                attempts++;
+                const canvas = workshop.querySelector('canvas');
+
+                if (canvas && canvas.width > 200) {
+                    clearInterval(interval);
+                    try {
+                        canvas.getContext('2d', { willReadFrequently: true });
+                    } catch(e) {}
+                    const dataUrl = canvas.toDataURL('image/png', 1.0);
+                    resolve(dataUrl);
+                } 
+                else if (attempts >= maxAttempts) {
+                    clearInterval(interval);
+                    console.warn('QR Code gagal dibuat untuk:', teksKode);
+                    resolve('');
+                }
+            }, 60);
+        });
+    }
+
+document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+    e.preventDefault(); 
+    
+    var btn = document.getElementById('btn-kirim');
+    var originalBtnText = btn.innerHTML; 
+    
+    btn.innerHTML = "Memeriksa Data...";
+    btn.disabled = true;
+
+    const wrapperUtama = document.getElementById('printable-ticket-wrapper');
+    wrapperUtama.innerHTML = "";
+
+    var formData = new FormData(this);
+    var nama = formData.get('nama') || "-";
+    var nik = formData.get('nik') || "-";
+    var dept = formData.get('departemen') || "-";
+    var baju = formData.get('ukuran_baju') || "-";
+    var statusKaryawan = formData.get('status') || "-";
+    var totalOrang = (statusKaryawan === "Menikah") ? parseInt(formData.get('keluarga') || 1) : 1;
+
+    globalFilename = 'E-Ticket_Gathering_' + nik + '.pdf';
+
+    try {
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData
+            // HAPUS mode: 'no-cors' → kita butuh response JSON
+        });
+
+        const result = await response.json();
+
+        if (result.status === "duplikat") {
+            alert("❌ " + result.pesan);
+            btn.innerHTML = originalBtnText;
+            btn.disabled = false;
+            return;
+        }
+
+        // Jika sukses → buat tiket
+        btn.innerHTML = "Membuat Tiket PDF...";
+
+        if (statusKaryawan === "Lajang") {
+            const qrBase64 = await generateQrBase64Async(nik);
+            tambahkanLembarTiketHtml(wrapperUtama, nik, "TIKET UTAMA (KARYAWAN)", nama, dept, baju, "1 of 1", qrBase64);
+        } else {
+            const qr1 = await generateQrBase64Async(nik + "-1");
+            tambahkanLembarTiketHtml(wrapperUtama, nik + "-1", "TIKET UTAMA (KARYAWAN)", nama, dept, baju, "1 of " + totalOrang, qr1);
+
+            for (let i = 2; i <= totalOrang; i++) {
+                const kode = nik + "-" + i;
+                const qrFam = await generateQrBase64Async(kode);
+                tambahkanLembarTiketHtml(wrapperUtama, kode, `TIKET TAMBAHAN (PENDAMPING ${i-1})`, "PENDAMPING DARI " + nama, dept, "-", i + " of " + totalOrang, qrFam);
+                await new Promise(r => setTimeout(r, 700));
+            }
+        }
+
+        await new Promise(r => setTimeout(r, 1000));
+        
+        document.getElementById('form-view').classList.add('hidden');
+        document.getElementById('success-view').classList.remove('hidden');
+        unduhPdfSaja();
+
+    } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan saat memproses data. Silakan coba lagi.");
+        btn.innerHTML = originalBtnText;
+        btn.disabled = false;
+    }
+});
+
+    function unduhPdfSaja() {
+        const targetElement = document.getElementById('printable-ticket-wrapper');
+        const opsiKonfigurasi = {
+            margin:       0,
+            filename:     globalFilename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { 
+                scale: 2.5,
+                useCORS: true,
+                allowTaint: true,
+                logging: false,
+                imageTimeout: 0,
+                removeContainer: true,
+                backgroundColor: '#ffffff',
+                scrollX: 0,
+                scrollY: 0
+            },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opsiKonfigurasi).from(targetElement).save();
+    }
+
+    function tambahkanLembarTiketHtml(parent, textKode, tipeTiket, namaUser, departemenUser, ukuranBajuUser, lembarInfo, base64SrcQr) {
+    const templateTiket = `
+        <div class="ticket-page" style="background: white; min-height: 920px; padding: 40px; box-sizing: border-box; font-family: Arial, sans-serif; position: relative;">
+            
+            <!-- HEADER DENGAN LOGO -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                <img src="data:image/png;base64,PASTE_BASE64_LOGO_DISINI" 
+                     style="height: 65px;" alt="Logo PT. Saga Hikari Teknindo Sejati">
+                
+                <div style="text-align: right;">
+                    <h1 style="margin:0; font-size: 26px; font-weight: bold; color: #1e3c72;">FAMILY GATHERING</h1>
+                    <p style="margin:5px 0 0 0; color: #2a5298;">E-TICKET</p>
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 18px; text-align: center; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin:0; font-size: 15px;">PT. Saga Hikari Teknindo Sejati</p>
+            </div>
+            
+            <!-- SUB BAR -->
+            <div style="background: #ffc107; color: #111; text-align: center; padding: 10px; font-weight: bold; font-size: 14px; margin-bottom: 25px;">
+                TICKET ${lembarInfo} • TANGGAL ACARA: 18 JULI 2026
+            </div>
+
+            <div style="padding: 10px 0;">
+                <!-- DATA REGISTRASI -->
+                <div style="font-size:12px; color:#70757a; font-weight:bold; margin-bottom:12px; border-bottom:2px solid #dadce0; padding-bottom:8px;">
+                    INFORMASI REGISTRASI / MANIFEST DATA
+                </div>
+                
+                <div style="display:flex; flex-wrap:wrap; gap:20px 0;">
+                    <div style="width:50%;">
+                        <div style="font-size:11px; color:#80868b;">NAMA PEMILIK TIKET</div>
+                        <div style="font-weight:bold; font-size:15px;">${namaUser}</div>
+                    </div>
+                    <div style="width:50%;">
+                        <div style="font-size:11px; color:#80868b;">DEPARTEMEN / BAGIAN</div>
+                        <div style="font-weight:bold; font-size:15px;">${departemenUser}</div>
+                    </div>
+                    <div style="width:50%;">
+                        <div style="font-size:11px; color:#80868b;">UKURAN BAJU</div>
+                        <div style="font-weight:bold; font-size:15px;">${ukuranBajuUser}</div>
+                    </div>
+                    <div style="width:50%;">
+                        <div style="font-size:11px; color:#80868b;">KATEGORI UNDANGAN</div>
+                        <div style="font-weight:bold; font-size:15px;">KARYAWAN TETAP</div>
+                    </div>
+                </div>
+
+                <!-- QR CODE AREA -->
+                <div style="text-align: center; margin: 40px 0 30px 0;">
+                    <div style="display: inline-block; padding: 15px; background: white; border: 2px solid #1e3c72; border-radius: 12px;">
+                        <img src="${base64SrcQr}" 
+                             style="width: 185px; height: 185px; display: block;" 
+                             alt="QR Code"/>
+                    </div>
+                    <div style="margin-top: 20px; font-size: 20px; font-weight: 800; color: #1e3c72; letter-spacing: 2px;">${textKode}</div>
+                    <div style="display: inline-block; margin-top: 10px; background: #e8f0fe; color: #1a73e8; padding: 8px 20px; border-radius: 25px; font-size: 13px; font-weight: bold;">
+                        ${tipeTiket}
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div style="border-top: 2px solid #dadce0; padding-top: 20px; margin-top: 30px; font-size: 11px; color: #5f6368; line-height: 1.6;">
+                <div style="font-weight: bold; margin-bottom: 10px; color: #202124;">SYARAT & KETENTUAN GATE MASUK:</div>
+                <ul style="padding-left: 18px;">
+                    <li>Simpan file E-Ticket PDF ini di ponsel Anda atau cetak dengan kertas jika diperlukan.</li>
+                    <li>1 (Satu) QR Code di atas hanya berlaku untuk akses masuk 1 (Satu) orang pengunjung saja.</li>
+                    <li>Panitia berhak memvalidasi kesesuaian data NIK fisik saat melakukan verifikasi scan pintu masuk.</li>
+                    <li>Jangan membagikan gambar QR Code ini kepada pihak lain untuk menghindari penyalahgunaan tiket undangan.</li>
+                </ul>
+                <div style="text-align:center; margin-top: 25px; color:#9aa0a6; font-size:10px;">
+                    SISTEM REGISTRASI RESMI PT. SAGA HIKARI TEKNINDO SEJATI 2026
+                </div>
+            </div>
+        </div>
+    `;
+    parent.insertAdjacentHTML('beforeend', templateTiket);
+}
+</script>
+</body>
+</html>
